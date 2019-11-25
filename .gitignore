@@ -347,3 +347,6 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+sfml/SFML/
+sfml/SFML-2.5.1-windows-vc14-32-bit.zip
