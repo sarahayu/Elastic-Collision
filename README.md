@@ -1,2 +1,2 @@
 # Elastic-Collision
- Elastic collision in two languages
+ Elastic collision in C++ with SFML, and Javascript with PaperJS
