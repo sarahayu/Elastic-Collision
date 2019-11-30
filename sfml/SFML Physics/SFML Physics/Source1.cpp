@@ -11,8 +11,8 @@ unsigned int windowWidth = 800, windowHeight = 600;
 sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Collision");
 sf::View viewport(sf::FloatRect({}, { (float)windowWidth, (float)windowHeight }));
 sf::FloatRect mainWindowBounds;
-Ball ball1(sf::Color::Cyan);
-Ball ball2(sf::Color::Green);
+Ball ball1(sf::Color::Cyan * sf::Color(200, 200, 200));
+Ball ball2(sf::Color::Green * sf::Color(200, 200, 200));
 BallAccelerator accelerator1(ball1);
 BallAccelerator accelerator2(ball2);
 sf::Clock stopwatch;
@@ -148,7 +148,7 @@ void update(float deltatime)
 
 		float a = 0.5f * mass2 + std::pow(mass2, 2) / (2 * mass1);
 		float b = -2 * (mass1*velocity1 + mass2*velocity2)*mass2 / (2 * mass1);
-		float c = (mass1*velocity1 + mass2*velocity2) / (2 * mass1) - 0.5f*mass1*std::pow(velocity1, 2)
+		float c = std::pow((mass1*velocity1 + mass2*velocity2), 2) / (2 * mass1) - 0.5f*mass1*std::pow(velocity1, 2)
 			- 0.5f*mass2*std::pow(velocity2, 2);
 
 		ball2.velocity = (-b + std::sqrt(std::pow(b, 2) - 4 * a*c)) / (2 * a);
