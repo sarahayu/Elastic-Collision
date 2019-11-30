@@ -1,169 +1,177 @@
-#include <SFML\Graphics.hpp>
 #include "imgui\imgui.h"
 #include "imgui\imgui-SFML.h"
+#include "Settings.h"
+#include "BallAccelerator.h"
+#include "Ball.h"
 #include <iostream>
 
-const float TIME_TO_COLLISION = 2.f;
-const float COASTING_TIME = 0.2f;
-const float ACCEL_TIME = TIME_TO_COLLISION - COASTING_TIME;
-sf::Font ARIAL_FONT;
+float velocity1 = 100.f, velocity2 = -50.f;
+float mass1 = 1.f, mass2 = 1.f;
+unsigned int windowWidth = 800, windowHeight = 600;
+sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Collision");
+sf::View viewport(sf::FloatRect({}, { (float)windowWidth, (float)windowHeight }));
+sf::FloatRect mainWindowBounds;
+Ball ball1(sf::Color::Cyan);
+Ball ball2(sf::Color::Green);
+BallAccelerator accelerator1(ball1);
+BallAccelerator accelerator2(ball2);
+sf::Clock stopwatch;
 
-std::string cutZeroes(std::string str)
-{
-	// remove trailing zeroes: refer to https://stackoverflow.com/a/13709929
-	str.erase(str.find_last_not_of('0') + 1, std::string::npos);
-	str.erase(str.find_last_not_of('.') + 1, std::string::npos);
-
-	return str;
-}
-
-class Ball
-{
-public:
-	Ball(float acceleration, float finalVelocity, sf::Vector2f position, sf::Color color, float mass)
-	{
-		this->acceleration = acceleration;
-		this->velocity = 0.f;
-		this->finalVelocity = finalVelocity;
-
-		circle.setPosition(position);
-		circle.setRadius(50.f);
-		circle.setOrigin(50.f, 50.f);
-		circle.setFillColor(color);
-
-		massText.setFont(ARIAL_FONT);
-		massText.setString(cutZeroes(std::to_string(mass)));
-		massText.setCharacterSize(60U);
-		massText.setOutlineThickness(1.f);
-		sf::FloatRect bounds = massText.getLocalBounds();
-		massText.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
-	}
-
-	bool collide(Ball other)
-	{
-		return circle.getGlobalBounds().intersects(other.circle.getGlobalBounds());
-	}
-
-	void resolveCollision(Ball &other)
-	{
-		sf::FloatRect intersection;
-		circle.getGlobalBounds().intersects(other.circle.getGlobalBounds(), intersection);
-		if (circle.getPosition().x > other.circle.getPosition().x) circle.move(intersection.width, 0.f);
-		else other.circle.move(intersection.width, 0.f);
-
-	}
-
-	void update(float deltatime)
-	{
-		float elapsed = clock.getElapsedTime().asSeconds();
-		if (elapsed < TIME_TO_COLLISION - COASTING_TIME)
-			velocity += acceleration * deltatime;
-		else if (elapsed < TIME_TO_COLLISION)
-			velocity = finalVelocity;
-
-		circle.move(velocity * deltatime, 0.f);
-	}
-
-	void draw(sf::RenderWindow &window)
-	{
-		massText.setPosition(circle.getPosition());
-		window.draw(circle);
-		window.draw(massText);
-	}
-
-	float acceleration;
-	float velocity;
-
-private:
-	sf::CircleShape circle;
-	sf::Text massText;
-	sf::Clock clock;
-	float finalVelocity;
-};
-
-
+void resetBalls();
+void input(float deltatime);
+void update(float deltatime);
+void draw();
 
 int main()
 {
-	ARIAL_FONT.loadFromFile("arial.ttf");
-	sf::RenderWindow window(sf::VideoMode(800, 600), "Collision");
 	window.setFramerateLimit(60U);
+	window.setView(viewport);
 	ImGui::SFML::Init(window);
-	ImGui::SetNextWindowPos({ 0.f,0.f });
 
-	float velocity1 = 500.f, velocity2 = 500.f;
-	float mass1 = 5.f, mass2 = 5.f;
-
-	float accel1 = velocity1 / ACCEL_TIME;
-	float accel2 = velocity2 / ACCEL_TIME;
-
-	float deltaX1 = 0.5f * accel1 * std::pow(ACCEL_TIME, 2) + velocity1 * COASTING_TIME;
-	float deltaX2 = 0.5f * accel2 * std::pow(ACCEL_TIME, 2) + velocity2 * COASTING_TIME;
-
-	Ball ball1(accel1, velocity1, { 400.f - 50.f - deltaX1,300.f }, sf::Color::Cyan, mass1);
-	Ball ball2(-accel2, -velocity2, { 400.f + 50.f + deltaX2,300.f }, sf::Color::Green, mass2);
+	resetBalls();
 
 	sf::Clock clock;
-	sf::Clock stopwatch;
+	stopwatch.restart();
 
 	while (window.isOpen())
 	{
-		sf::Event evnt;
-
-		while (window.pollEvent(evnt))
-		{
-			ImGui::SFML::ProcessEvent(evnt);
-
-			switch (evnt.type)
-			{
-			case sf::Event::Closed:
-				window.close();
-				break;
-			}
-		}
-
 		float dt = clock.restart().asSeconds();
 
-		ImGui::SFML::Update(window, sf::seconds(dt));
-
-		ImGui::Begin("Perfectly Elastic Collision", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
-
-		ImGui::PushItemWidth(100);
-		ImGui::InputFloat("Ball 1 velocity", &velocity1, 1.0f, 1.0f, "%.1f");
-		ImGui::InputFloat("Ball 1 mass", &mass1, 1.0f, 1.0f, "%.1f");
-		ImGui::InputFloat("Ball 2 velocity", &velocity2, 1.0f, 1.0f, "%.1f");
-		ImGui::InputFloat("Ball 2 mass", &mass2, 1.0f, 1.0f, "%.1f");
-
-		if (ImGui::Button("Reset demo"))
-		{
-			std::cout << "\nReset demo";
-		}
-
-		ImGui::SameLine(100);
-		ImGui::Text(std::to_string(stopwatch.getElapsedTime().asSeconds()).c_str());
-
-		ImGui::End();
-
-		ball1.update(dt);
-		ball2.update(dt);
-
-		if (ball1.collide(ball2))
-		{
-			ball1.resolveCollision(ball2);
-
-			ball1.acceleration = -ball1.acceleration;
-			ball1.velocity = -ball1.velocity;
-			ball2.acceleration = -ball2.acceleration;
-			ball2.velocity = -ball2.velocity;
-		}
-
-		window.clear(sf::Color::White);
-		ball1.draw(window);
-		ball2.draw(window);
-		ImGui::SFML::Render(window);
-		window.display();
+		input(dt);
+		update(dt);
+		draw();
 	}
 
 	ImGui::SFML::Shutdown();
 	return 0;
+}
+
+void resetBalls()
+{
+	float accel1 = velocity1 / Settings::ACCEL_TIME;
+	float accel2 = velocity2 / Settings::ACCEL_TIME;
+
+	float deltaX1 = 0.5f * accel1 * std::pow(Settings::ACCEL_TIME, 2) + velocity1 * Settings::COASTING_TIME;
+	float deltaX2 = 0.5f * accel2 * std::pow(Settings::ACCEL_TIME, 2) + velocity2 * Settings::COASTING_TIME;
+
+	ball1.initPhysics({ windowWidth / 2 - Ball::RADIUS - deltaX1,(float)windowHeight / 2 }, accel1, mass1);
+	ball2.initPhysics({ windowWidth / 2 + Ball::RADIUS - deltaX2,(float)windowHeight / 2 }, accel2, mass2);
+
+	accelerator1.setFinalVelocity(velocity1);
+	accelerator2.setFinalVelocity(velocity2);
+}
+
+void input(float deltatime)
+{
+	sf::Event evnt;
+
+	auto checkInput = [&]() {
+
+		if (velocity1 < velocity2)
+		{
+			std::swap(velocity1, velocity2);
+			std::swap(mass1, mass2);
+		}
+		else if (velocity1 == velocity2)
+			velocity2--;
+
+		resetBalls();
+
+		stopwatch.restart();
+	};
+
+	while (window.pollEvent(evnt))
+	{
+		ImGui::SFML::ProcessEvent(evnt);
+
+		switch (evnt.type)
+		{
+		case sf::Event::Closed:
+			window.close();
+			break;
+		case sf::Event::Resized:
+			windowWidth = evnt.size.width;
+			windowHeight = evnt.size.height;
+			viewport.setSize((float)windowWidth, (float)windowHeight);
+			viewport.setCenter((float)windowWidth / 2, (float)windowHeight / 2);
+			window.setView(viewport);
+			break;
+		case sf::Event::KeyReleased:
+			if (evnt.key.code == sf::Keyboard::Enter) checkInput();
+			break;
+		}
+	}
+
+
+	ImGui::SFML::Update(window, sf::seconds(deltatime));
+
+	ImGui::Begin("Perfectly Elastic Collision", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+
+	ImGui::Text("Ball 1");
+	ImGui::Spacing();
+	ImGui::Text(" Velocity"); ImGui::SameLine(100.f); ImGui::InputFloat("##1", &velocity1, 1.0f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
+	ImGui::Text(" Mass"); ImGui::SameLine(100.f); ImGui::InputFloat("##2", &mass1, 1.0f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal);
+	ImGui::Spacing();
+	ImGui::Separator();
+	ImGui::Spacing();
+	ImGui::Text("Ball 2");
+	ImGui::Spacing();
+	ImGui::Text(" Velocity"); ImGui::SameLine(100.f); ImGui::InputFloat("##3", &velocity2, 1.0f, 1.0f, "%.2f", ImGuiInputTextFlags_CharsDecimal);
+	ImGui::Text(" Mass"); ImGui::SameLine(100.f); ImGui::InputFloat("##4", &mass2, 1.0f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal);
+	ImGui::Spacing();
+	ImGui::Separator();
+	mass1 = std::max(0.1f, mass1); mass2 = std::max(0.1f, mass2);
+
+	ImGui::Spacing();
+	ImGui::Text("%.2fs", stopwatch.getElapsedTime().asSeconds());
+	mainWindowBounds = sf::FloatRect(ImGui::GetWindowPos(), ImGui::GetWindowSize());
+	ImGui::SameLine(mainWindowBounds.width - 91);
+	if (ImGui::Button("Reset demo")) checkInput();
+	ImGui::Spacing();
+	ImGui::End();
+}
+
+void update(float deltatime)
+{
+	float elapsed = stopwatch.getElapsedTime().asSeconds();
+	if (elapsed < Settings::TIME_TO_COLLISION)
+	{
+		accelerator1.update(deltatime);
+		accelerator2.update(deltatime);
+	}
+	ball1.update(deltatime);
+	ball2.update(deltatime);
+
+	if (ball1.collide(ball2))
+	{
+		ball1.resolveCollision(ball2);
+
+		float a = 0.5f * mass2 + std::pow(mass2, 2) / (2 * mass1);
+		float b = -2 * (mass1*velocity1 + mass2*velocity2)*mass2 / (2 * mass1);
+		float c = (mass1*velocity1 + mass2*velocity2) / (2 * mass1) - 0.5f*mass1*std::pow(velocity1, 2)
+			- 0.5f*mass2*std::pow(velocity2, 2);
+
+		ball2.velocity = (-b + std::sqrt(std::pow(b, 2) - 4 * a*c)) / (2 * a);
+		ball1.velocity = (mass1*velocity1 + mass2*velocity2 - mass2 * ball2.velocity) / mass1;
+	}
+
+	if (elapsed > Settings::TIME_TO_COLLISION)
+	{
+		if (std::abs(elapsed - Settings::TIME_TO_COLLISION) < 0.1f)
+			ImGui::SetNextWindowPos({ mainWindowBounds.left + mainWindowBounds.width,mainWindowBounds.top });
+
+		ImGui::Begin("Final Velocities", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::Text("Ball 1"); ImGui::SameLine(mainWindowBounds.width - 92); ImGui::Text("%.2f", ball1.velocity);
+		ImGui::Text("Ball 2"); ImGui::SameLine(mainWindowBounds.width - 92); ImGui::Text("%.2f", ball2.velocity);
+		ImGui::End();
+	}
+}
+
+void draw()
+{
+	window.clear(sf::Color(230,230,230));
+	ball1.draw(window);
+	ball2.draw(window);
+	ImGui::SFML::Render(window);
+	window.display();
 }
