@@ -37,17 +37,22 @@ void Ball::initPhysics(sf::Vector2f position, float acceleration, float mass)
 	massText.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
 }
 
-bool Ball::collide(Ball other)
-{
-	return circle.getGlobalBounds().intersects(other.circle.getGlobalBounds());
-}
-
-void Ball::resolveCollision(Ball & other)
+bool Ball::resolveCollision(Ball & other)
 {
 	sf::FloatRect intersection;
-	circle.getGlobalBounds().intersects(other.circle.getGlobalBounds(), intersection);
-	if (circle.getPosition().x > other.circle.getPosition().x) circle.move(intersection.width, 0.f);
-	else other.circle.move(intersection.width, 0.f);
+	if (!circle.getGlobalBounds().intersects(other.circle.getGlobalBounds(), intersection))
+		return false;
+
+	if (circle.getPosition().x > other.circle.getPosition().x)
+	{
+		circle.move(intersection.width / 2, 0.f);
+		other.circle.move(-intersection.width / 2, 0.f);
+	}
+	else
+	{
+		circle.move(-intersection.width / 2, 0.f);
+		other.circle.move(intersection.width / 2, 0.f);
+	}
 
 }
 

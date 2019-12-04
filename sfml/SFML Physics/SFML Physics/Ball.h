@@ -8,8 +8,7 @@ public:
 
 	void initPhysics(sf::Vector2f position, float acceleration, float mass);
 
-	bool collide(Ball other);
-	void resolveCollision(Ball &other);
+	bool resolveCollision(Ball &other);
 
 	void update(float deltatime);
 	void draw(sf::RenderWindow &window);
