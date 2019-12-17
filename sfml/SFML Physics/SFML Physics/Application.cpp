@@ -13,17 +13,19 @@ Application::Application()
 	m_accelerator1(m_ball1),
 	m_accelerator2(m_ball2)
 {
-}
+	m_soundBuffer.loadFromFile("boing.ogg");
+	m_boingEffect.setBuffer(m_soundBuffer);
 
-void Application::run()
-{
 	m_window.setView(m_viewport);
 	ImGui::SFML::Init(m_window);
 
 	std::cout << "Created by Sarah Yuniar & Ahmed Raiyan";
 
 	resetBalls();
+}
 
+void Application::run()
+{
 	sf::Clock clock;
 	m_stopwatch.restart();
 	float accumulatedDT = 0.f;
@@ -146,6 +148,8 @@ void Application::update(float deltatime)
 
 		m_ball2.velocity = (-b + std::sqrt(std::pow(b, 2) - 4 * a*c)) / (2 * a);
 		m_ball1.velocity = (m_input.mass1*m_input.velocity1 + m_input.mass2*m_input.velocity2 - m_input.mass2 * m_ball2.velocity) / m_input.mass1;
+
+		m_boingEffect.play();
 	}
 }
 

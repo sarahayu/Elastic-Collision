@@ -1,6 +1,7 @@
 #pragma once
 #include "BallAccelerator.h"
 #include "Ball.h"
+#include <SFML\Audio.hpp>
 
 class Application
 {
@@ -28,6 +29,8 @@ private:
 
 	sf::Clock m_stopwatch;
 	sf::FloatRect m_mainWindowBounds;
+	sf::Sound m_boingEffect;
+	sf::SoundBuffer m_soundBuffer;
 
 	struct {
 		float velocity1 = 100.f, velocity2 = -50.f;
