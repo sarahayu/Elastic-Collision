@@ -131,11 +131,8 @@ void Application::input()
 
 void Application::update(float deltatime)
 {
-	if (m_stopwatch.getElapsedTime().asSeconds() < Settings::TIME_TO_COLLISION)
-	{
-		m_accelerator1.update(deltatime);
-		m_accelerator2.update(deltatime);
-	}
+	m_accelerator1.update(deltatime);
+	m_accelerator2.update(deltatime);
 	m_ball1.update(deltatime);
 	m_ball2.update(deltatime);
 
