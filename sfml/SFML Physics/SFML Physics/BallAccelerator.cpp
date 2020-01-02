@@ -7,7 +7,7 @@ BallAccelerator::BallAccelerator(Ball & ball)
 {
 }
 
-void BallAccelerator::setFinalVelocity(float finalVelocity)
+void BallAccelerator::setFinalVelocity(const sf::Vector2f &finalVelocity)
 {
 	this->finalVelocity = finalVelocity;
 	clock.restart();
@@ -19,6 +19,6 @@ void BallAccelerator::update(float deltatime)
 	if (elapsed > Settings::TIME_TO_COLLISION - Settings::COASTING_TIME)
 	{
 		ballObject.velocity = finalVelocity;
-		ballObject.acceleration = 0.f;
+		ballObject.acceleration = sf::Vector2f();
 	}
 }

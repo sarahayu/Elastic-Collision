@@ -9,11 +9,11 @@ class BallAccelerator
 public:
 	BallAccelerator(Ball &ball);
 
-	void setFinalVelocity(float finalVelocity);
+	void setFinalVelocity(const sf::Vector2f &finalVelocity);
 	void update(float deltatime);
 
 private:
 	Ball &ballObject;
 	sf::Clock clock;
-	float finalVelocity;
+	sf::Vector2f finalVelocity;
 };

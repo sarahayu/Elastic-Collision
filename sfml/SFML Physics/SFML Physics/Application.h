@@ -33,7 +33,7 @@ private:
 	sf::SoundBuffer m_soundBuffer;
 
 	struct {
-		float velocity1 = 100.f, velocity2 = -50.f;
+		sf::Vector2f velocity1 = { 100.f, 50.f }, velocity2 = { -50.f,-50.f };
 		float mass1 = 1.f, mass2 = 1.f;
 	} m_input;
 };

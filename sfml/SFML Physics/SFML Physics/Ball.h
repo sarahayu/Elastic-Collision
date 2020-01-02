@@ -4,20 +4,21 @@
 class Ball
 {
 public:
-	Ball(sf::Color color);
 
-	void initPhysics(sf::Vector2f position, float acceleration, float mass);
+	Ball(const sf::Color &color);
 
-	bool resolveCollision(Ball &other);
+	void initPhysics(const sf::Vector2f &position, const sf::Vector2f &acceleration, const float &mass);
 
-	void update(float deltatime);
+	const bool resolveCollision(Ball &other);
+	static float getRadius(const float &mass);
+	const float getRadius() const;
+
+	void update(const float &deltatime);
 	void draw(sf::RenderWindow &window);
 
-	float acceleration = 0.f;
-	float velocity = 0.f;
+	sf::Vector2f acceleration;
+	sf::Vector2f velocity;
 	float mass = 0.f;
-
-	static const float RADIUS;
 
 private:
 	sf::CircleShape circle;
