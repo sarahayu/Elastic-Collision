@@ -7,5 +7,5 @@ namespace Settings
 	const float COASTING_TIME = 0.1f;
 	const float ACCEL_TIME = TIME_TO_COLLISION - COASTING_TIME;
 
-	sf::Font& getComfortaaFont();
+	sf::Font& getArialFont();
 }

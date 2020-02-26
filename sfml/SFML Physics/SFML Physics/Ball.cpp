@@ -17,8 +17,10 @@ Ball::Ball(const sf::Color &color)
 {
 	circle.setFillColor(color);
 
-	massText.setFont(Settings::getComfortaaFont());
+	massText.setFont(Settings::getArialFont());
 	massText.setString(setPrecision(mass));
+	massText.setOutlineThickness(1.f);
+	massText.setOutlineColor(sf::Color(100, 100, 100));
 }
 
 void Ball::initPhysics(const sf::Vector2f &position, const sf::Vector2f &acceleration, const float &mass)
@@ -76,11 +78,6 @@ const float Ball::getRadius() const
 	return circle.getRadius();
 }
 
-const float Ball::getMass() const
-{
-	return mass;
-}
-
 void Ball::update(const float &deltatime)
 {
 	velocity += acceleration * deltatime;
@@ -89,11 +86,7 @@ void Ball::update(const float &deltatime)
 
 void Ball::draw(sf::RenderWindow & window)
 {
-	const sf::Vector2f originalPos = circle.getPosition();
-	circle.setPosition(originalPos.x, -originalPos.y);
 	massText.setPosition(circle.getPosition());
 	window.draw(circle);
 	window.draw(massText);
-
-	circle.setPosition(originalPos);
 }
