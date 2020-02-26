@@ -28,7 +28,7 @@ const sf::Vector2f mu::rotateVector(const sf::Vector2f & centered, const float &
 
 	toRotate.y += rotateBy;
 
-	return toRotate;
+	return polar ? toRotate : polarToRectangular(toRotate);
 }
 
 const float mu::radToDeg(const float & radians)
